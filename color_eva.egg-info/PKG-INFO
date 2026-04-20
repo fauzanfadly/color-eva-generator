@@ -45,3 +45,35 @@ Notes
 - Short hex codes like `#F0A` are expanded to `#FF00AA`.
 
 If you want, I can add `--validate-only` (no network call) or save outputs to a different folder by default.
+
+Make `color-eva` available globally
+----------------------------------
+
+1) Recommended — add Python `Scripts` folder to your user PATH (one-time):
+
+Run the helper included in this repo (no admin required):
+
+```powershell
+cd <path-to-this-repo>
+install-global.bat
+```
+
+After that, close and re-open Command Prompt or PowerShell, then run:
+
+```powershell
+color-eva --help
+```
+
+2) Manual alternative — find the scripts folder and add to PATH yourself:
+
+```powershell
+python -c "import sysconfig; print(sysconfig.get_path('scripts'))"
+setx PATH "%PATH%;C:\path\to\that\Scripts"
+```
+
+If `color-eva` is still not found, run the tool with:
+
+```powershell
+python -m color_eva.cli generate "#9D2A28"
+```
+

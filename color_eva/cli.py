@@ -64,6 +64,47 @@ def _save_json(data, out_path: Path):
         json.dump(data, f, indent=2, ensure_ascii=False)
 
 
+def _hex_to_rgb(hex_color: str) -> str:
+    h = hex_color.strip()
+    if h.startswith("#"):
+        h = h[1:]
+    if len(h) == 3:
+        h = "".join([c * 2 for c in h])
+    if len(h) != 6:
+        raise ValueError(f"Invalid hex color: {hex_color}")
+    r = int(h[0:2], 16)
+    g = int(h[2:4], 16)
+    b = int(h[4:6], 16)
+    return f"rgb({r}, {g}, {b})"
+
+
+def _convert_palette(api_data: dict) -> list:
+    """Convert API palette format into requested array with named keys.
+
+    Example input: {"primary": ["#..", ...], "success": [...], ...}
+    Example output: [ { "color-primary-100": ["#..","rgb(...)"], ... } ]
+    """
+    scales = [100, 200, 300, 400, 500, 600, 700, 800, 900]
+    out_obj: dict[str, list[str]] = {}
+    for group_name, values in api_data.items():
+        # ensure we iterate in the given order and handle variable lengths
+        for i, raw_hex in enumerate(values):
+            try:
+                hex_val = raw_hex.strip().upper()
+            except Exception:
+                hex_val = str(raw_hex)
+            if not hex_val.startswith("#"):
+                hex_val = "#" + hex_val
+            scale = scales[i] if i < len(scales) else 100 * (i + 1)
+            key = f"color-{group_name}-{scale}"
+            try:
+                rgb = _hex_to_rgb(hex_val)
+            except Exception:
+                rgb = "rgb(0, 0, 0)"
+            out_obj[key] = [hex_val, rgb]
+    return [out_obj]
+
+
 def main(argv=None) -> int:
     parser = argparse.ArgumentParser(prog="color-eva")
     parser.add_argument("command", choices=["generate"])
@@ -91,11 +132,17 @@ def main(argv=None) -> int:
         except Exception as e:
             logging.error("Request failed: %s", e)
             return 3
+        # convert API response into new format before saving
+        try:
+            converted = _convert_palette(data) if isinstance(data, dict) else data
+        except Exception:
+            converted = data
+
         if args.out:
             out_path = Path(args.out)
         else:
             out_path = _get_downloads_dir() / f"color-eva-generate-{color_hex}.json"
-        _save_json(data, out_path)
+        _save_json(converted, out_path)
         logging.info("Saved JSON to %s", out_path)
         if args.open:
             try:
