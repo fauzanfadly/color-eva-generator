@@ -1,0 +1,47 @@
+Metadata-Version: 2.4
+Name: color-eva
+Version: 0.1.0
+Summary: CLI to send color to EVA painter and save JSON response
+Requires-Python: >=3.8
+Description-Content-Type: text/markdown
+
+color-eva
+=========
+
+Simple CLI to send a color code to EVA painter and save the JSON output.
+
+Quick run (from this folder without installing):
+
+```bash
+python color-eva.py generate "#9D2A28"
+```
+
+Install (creates `color-eva` command when installed):
+
+```bash
+pip install -e .
+color-eva generate "#9D2A28"
+```
+
+Output
+- Saves JSON to your Downloads folder as `color-eva-generate-9D2A28.json` (hex code without `#`).
+
+Options
+- `--retries N`: number of retries on network failure (default: 2)
+- `--timeout N`: request timeout seconds (default: 30)
+- `--backoff N`: base backoff seconds for exponential backoff (default: 1.0)
+- `-v, --verbose`: enable verbose debug output
+- `-o, --out`: specify output file path
+- `--open`: open the saved file after writing
+
+Examples
+
+```bash
+python color-eva.py generate "#9D2A28" -v --retries 3 --timeout 10 --out ./color-eva-test.json
+```
+
+Notes
+- The CLI sends a GET request to the EVA painter endpoint with the `color` query parameter (hex, without `#`).
+- Short hex codes like `#F0A` are expanded to `#FF00AA`.
+
+If you want, I can add `--validate-only` (no network call) or save outputs to a different folder by default.

@@ -1,0 +1,9 @@
+README.md
+pyproject.toml
+color_eva/__init__.py
+color_eva/cli.py
+color_eva.egg-info/PKG-INFO
+color_eva.egg-info/SOURCES.txt
+color_eva.egg-info/dependency_links.txt
+color_eva.egg-info/entry_points.txt
+color_eva.egg-info/top_level.txt
