@@ -1,87 +1,115 @@
 color-eva
 =========
 
-Simple CLI to send a color code to EVA painter and save the JSON output.
+Ringkasan
+---------
+color-eva adalah utilitas baris perintah (CLI) sederhana untuk mengirimkan kode warna (hex) ke layanan "EVA painter" dan menyimpan balasan JSON yang sudah diolah.
 
-Quick run (from this folder without installing):
+Persyaratan
+-----------
+- Python 3.8 atau lebih baru
 
-```bash
+Instalasi (cara cepat)
+----------------------
+1) Install untuk pengguna (membuat perintah `color-eva` tersedia):
+
+```powershell
+python -m pip install --user .
+```
+
+2) (Windows) Tambahkan folder `Scripts` Python user ke PATH — repo ini menyediakan helper `install-global.bat`:
+
+```powershell
+.\install-global.bat
+# Setelah menjalankan helper: tutup dan buka kembali terminal
+```
+
+3) Alternatif terisolasi (pipx):
+
+```powershell
+pipx install .
+```
+
+4) Untuk pengembangan (editable install):
+
+```powershell
+python -m pip install -e .
+```
+
+Menjalankan tanpa instalasi
+--------------------------
+Jika belum ingin memasang paket, jalankan langsung dari folder proyek:
+
+```powershell
 python color-eva.py generate "#9D2A28"
 ```
 
-Install (creates `color-eva` command when installed):
+Penggunaan CLI
+-------------
+Sintaks dasar:
 
-```bash
-pip install -e .
-color-eva generate "#9D2A28"
+```text
+color-eva generate <color> [options]
 ```
 
-Output
-- Saves JSON to your Downloads folder as `color-eva-generate-9D2A28.json` (hex code without `#`).
+Opsi utama:
+- `-o, --out` : path file output yang diinginkan (jika tidak diberikan, file disimpan ke folder Downloads)
+- `--open` : buka file hasil setelah disimpan
+- `--retries N` : jumlah retry pada kegagalan jaringan (default: 2)
+- `--timeout N` : batas waktu request (detik, default: 30)
+- `--backoff N` : base backoff (detik, default: 1.0)
+- `-v, --verbose` : tampilkan log debug
 
-Options
-- `--retries N`: number of retries on network failure (default: 2)
-- `--timeout N`: request timeout seconds (default: 30)
-- `--backoff N`: base backoff seconds for exponential backoff (default: 1.0)
-- `-v, --verbose`: enable verbose debug output
-- `-o, --out`: specify output file path
-- `--open`: open the saved file after writing
-
-Examples
-
-```bash
-python color-eva.py generate "#9D2A28" -v --retries 3 --timeout 10 --out ./color-eva-test.json
-```
-
-Notes
-- The CLI sends a GET request to the EVA painter endpoint with the `color` query parameter (hex, without `#`).
-- Short hex codes like `#F0A` are expanded to `#FF00AA`.
-
-Output format (updated)
-- The saved JSON is now converted into an array with a single object where each key is a named token like `color-<group>-<scale>` and the value is an array of `["#HEX", "rgb(r, g, b)"]`.
-
-Example (partial):
-
-```json
-[
-	{
-		"color-primary-100": ["#DDE7FA", "rgb(221, 231, 250)"],
-		"color-primary-200": ["#BCCFF6", "rgb(188, 207, 246)"],
-		"color-primary-300": ["#94ACE6", "rgb(148, 172, 230)"]
-	}
-]
-```
-
-If you prefer the previous raw API structure, tell me and I can add a `--raw` flag to keep the original response.
-
-Make `color-eva` available globally
-----------------------------------
-
-1) Recommended — add Python `Scripts` folder to your user PATH (one-time):
-
-Run the helper included in this repo (no admin required):
+Contoh cepat:
 
 ```powershell
-cd <path-to-this-repo>
-install-global.bat
+color-eva generate "#FF0000"
+color-eva generate "#9D2A28" --out .\palette.json --open
 ```
 
-After that, close and re-open Command Prompt or PowerShell, then run:
-
-```powershell
-color-eva --help
-```
-
-2) Manual alternative — find the scripts folder and add to PATH yourself:
-
-```powershell
-python -c "import sysconfig; print(sysconfig.get_path('scripts'))"
-setx PATH "%PATH%;C:\path\to\that\Scripts"
-```
-
-If `color-eva` is still not found, run the tool with:
+Contoh menjalankan langsung tanpa menginstal:
 
 ```powershell
 python -m color_eva.cli generate "#9D2A28"
 ```
+
+Hasil output
+------------
+- Secara default file JSON disimpan ke folder Downloads sebagai `color-eva-generate-<HEX>.json` (HEX tanpa `#`).
+- CLI mengonversi respons API menjadi array berisi objek yang memiliki kunci seperti `color-<group>-<scale>` dengan nilai `["#HEX", "rgb(r, g, b)"]`.
+
+Contoh (potongan):
+
+```json
+[
+  {
+    "color-primary-100": ["#DDE7FA", "rgb(221, 231, 250)"],
+    "color-primary-200": ["#BCCFF6", "rgb(188, 207, 246)"],
+    "color-primary-300": ["#94ACE6", "rgb(148, 172, 230)"]
+  }
+]
+```
+
+Masalah umum & solusi
+---------------------
+- Jika perintah `color-eva` tidak ditemukan setelah instalasi user, pastikan folder `Scripts` user Python ada di PATH. Untuk mengetahui lokasinya jalankan:
+
+```powershell
+python -c "import sysconfig; print(sysconfig.get_path('scripts'))"
+```
+
+Lalu tambahkan lokasi tersebut ke PATH (atau jalankan `install-global.bat` yang sudah disediakan). Tutup dan buka kembali terminal setelah mengubah PATH.
+
+- Jika request ke server gagal: periksa koneksi internet dan coba tambahkan `--retries` atau ubah `--timeout`.
+
+Catatan teknis untuk pengembang
+--------------------------------
+- Entrypoint console script didefinisikan di `pyproject.toml`: `color-eva = color_eva.cli:main`.
+- Kode utama ada di: `color_eva/cli.py`.
+- Untuk menjalankan tes atau melakukan perubahan cepat, gunakan `pip install -e .` lalu jalankan `color-eva` langsung.
+
+Butuh bantuan lagi?
+------------------
+Jika masih bingung, beri tahu bagian mana yang kurang jelas — saya bisa menambahkan contoh lebih banyak atau screenshot langkah instalasi di Windows.
+
 
